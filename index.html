@@ -8,13 +8,9 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
         
-        :root {
-            --bg-dark: #020617;
-        }
-
         body { 
             font-family: 'Noto Sans TC', sans-serif; 
-            background: var(--bg-dark); 
+            background: #020617; 
             color: white; 
             margin: 0; 
             height: 100vh;
@@ -30,32 +26,27 @@
             overflow-y: auto !important;
             -webkit-overflow-scrolling: touch;
         }
-        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
-        /* 全局內容居中與字體大小 */
-        .text-balanced { text-align: center; margin-left: auto; margin-right: auto; }
-        
         /* 裝備欄格子 */
-        .equip-grid-container {
+        .equip-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            gap: 8px;
             width: 100%;
-            padding: 16px;
-            justify-items: center;
+            padding: 10px;
         }
         
         .equip-card {
-            width: 80px;
-            height: 95px;
+            aspect-ratio: 1/1.2;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            background: rgba(30, 41, 59, 0.4);
             transition: all 0.2s;
         }
 
@@ -64,133 +55,137 @@
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-out;
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.98);
         }
         .foldable-content.expanded {
-            max-height: 60vh;
+            max-height: 70vh;
             overflow-y: auto;
         }
 
-        /* 強化掉落數值字體 */
-        .stat-text { font-size: 1.1rem; font-weight: 900; line-height: 1.2; text-align: center; }
+        /* 數值放大顯示 */
+        .stat-val { 
+            font-size: 0.95rem; 
+            font-weight: 900; 
+            line-height: 1.2; 
+            text-shadow: 1px 1px 2px black;
+        }
         .rarity-ur { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); border-color: #ef4444 !important; }
         .rarity-set { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); border-color: #22c55e !important; }
 
         /* 戰鬥飄字 */
         .hit-effect {
-            position: absolute; pointer-events: none; color: #f87171; font-weight: 900; font-size: 2.5rem;
-            animation: fly-up 0.8s ease-out forwards; z-index: 50; text-shadow: 2px 2px 4px #000;
+            position: absolute; pointer-events: none; color: #f87171; font-weight: 900; font-size: 2rem;
+            animation: fly-up 0.8s ease-out forwards; z-index: 50; text-shadow: 2px 2px 0px #000;
         }
         @keyframes fly-up { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
 
-        .tab-btn { flex: 1; padding: 16px 0; font-size: 1.1rem; font-weight: 900; color: #94a3b8; border-bottom: 4px solid transparent; }
-        .tab-btn.active { color: white; border-bottom-color: #6366f1; background: rgba(51, 65, 85, 0.4); }
+        .tab-btn { flex: 1; padding: 14px 0; font-size: 0.9rem; font-weight: 700; color: #64748b; border-bottom: 4px solid transparent; }
+        .tab-btn.active { color: white; border-bottom-color: #6366f1; background: rgba(51, 65, 85, 0.3); }
 
-        .btn-main { @apply active:scale-95 transition-transform; cursor: pointer; }
+        .btn-click { @apply active:scale-90 transition-transform cursor-pointer; }
     </style>
 </head>
 <body class="custom-scroll">
 
-    <!-- 頂部資源列 -->
-    <div class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center shrink-0">
-        <div class="flex flex-col items-center">
-            <span class="text-[10px] text-slate-500 font-black uppercase">GOLD</span>
-            <span id="gold-display" class="text-yellow-400 font-black text-2xl">0</span>
+    <!-- 頂部導覽列 -->
+    <div class="p-3 bg-slate-950 border-b border-slate-800 flex justify-between items-center shrink-0 z-50">
+        <div class="flex flex-col items-start">
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">持有金幣</span>
+            <span id="gold-display" class="text-yellow-400 font-black text-2xl tracking-tight">0</span>
         </div>
         <div class="flex flex-col items-center">
-            <div id="mode-badge" class="px-3 py-0.5 rounded-full text-[10px] font-black bg-slate-800 text-slate-400 mb-1">地城探險</div>
-            <span id="zone-display" class="text-xl font-black text-white">Lv.1</span>
+            <div id="mode-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 mb-1">地城探險</div>
+            <span id="zone-display" class="text-base font-black text-white">Lv.1</span>
         </div>
-        <button onclick="showRebornDetails()" class="bg-indigo-600 px-5 py-2 rounded-2xl text-base font-black shadow-lg btn-main">
-            轉生
-            <div id="reborn-status" class="text-[10px] opacity-80">x0</div>
+        <button onclick="showRebornDetails()" class="bg-indigo-600 px-5 py-2 rounded-xl text-xs font-black btn-click shadow-lg shadow-indigo-900/40">
+            轉生 <span id="reborn-status" class="opacity-70">x0</span>
         </button>
     </div>
 
-    <!-- 戰鬥區域 -->
-    <div id="battle-scene" class="relative flex-1 bg-slate-900 flex flex-col items-center justify-center overflow-hidden min-h-[350px]">
-        <div id="monster-container" class="flex flex-col items-center w-full px-4">
-            <div id="monster-sprite" class="text-[130px] mb-4 select-none drop-shadow-2xl transition-transform active:scale-90">🧟</div>
-            <div id="monster-name" class="text-3xl font-black mb-4 text-slate-100">載入中...</div>
-            <div class="w-full max-w-[300px] h-7 bg-black rounded-full border-2 border-slate-700 overflow-hidden shadow-inner relative">
-                <div id="monster-hp-bar" class="h-full bg-gradient-to-r from-red-600 to-rose-500 transition-all duration-100" style="width: 100%;"></div>
+    <!-- 戰鬥中心區域 -->
+    <div id="battle-scene" class="relative flex-1 bg-slate-900 flex flex-col items-center justify-center overflow-hidden min-h-[320px]">
+        <div id="monster-container" class="flex flex-col items-center w-full">
+            <div id="monster-sprite" class="text-[120px] mb-4 select-none drop-shadow-2xl transition-transform active:scale-90 duration-75">🧟</div>
+            <div id="monster-name" class="text-2xl font-black mb-4 text-slate-100 drop-shadow-md">載入中...</div>
+            
+            <!-- 怪物血條 -->
+            <div class="w-3/4 h-6 bg-black/50 rounded-full border-2 border-slate-700 overflow-hidden relative shadow-inner">
+                <div id="monster-hp-bar" class="h-full bg-gradient-to-r from-red-600 to-rose-500 transition-all duration-150" style="width: 100%;"></div>
             </div>
             
             <div class="flex gap-4 mt-10">
-                <button onclick="toggleAuto()" id="auto-btn" class="bg-slate-700 px-8 py-4 rounded-2xl text-lg font-black border-2 border-white/10 shadow-2xl btn-main">自動: OFF</button>
-                <button onclick="goBack()" class="bg-slate-800 px-8 py-4 rounded-2xl text-lg font-black border-2 border-slate-700 shadow-2xl btn-main">撤退</button>
+                <button onclick="toggleAuto()" id="auto-btn" class="bg-slate-700 px-8 py-4 rounded-2xl text-base font-black border border-white/20 btn-click shadow-xl">自動: OFF</button>
+                <button onclick="goBack()" class="bg-slate-800/80 px-8 py-4 rounded-2xl text-base font-black border border-slate-700 btn-click shadow-xl">撤退</button>
             </div>
         </div>
 
-        <!-- 勇者狀態 -->
+        <!-- 玩家血條 (底部懸浮) -->
         <div class="absolute bottom-8 left-10 right-10">
-            <div class="flex justify-between text-xs font-black text-blue-400 mb-1 uppercase">
-                <span>Player Vitality</span>
+            <div class="flex justify-between text-[11px] font-bold text-blue-400 mb-1 tracking-widest">
+                <span>勇者生命值</span>
                 <span id="player-hp-text">0 / 0</span>
             </div>
-            <div class="w-full h-5 bg-black rounded-full overflow-hidden border-2 border-slate-800">
-                <div id="player-hp-bar" class="h-full bg-blue-500 transition-all duration-200" style="width: 100%;"></div>
+            <div class="w-full h-4 bg-black rounded-full overflow-hidden border-2 border-slate-800 shadow-lg">
+                <div id="player-hp-bar" class="h-full bg-blue-500 transition-all duration-300" style="width: 100%;"></div>
             </div>
         </div>
     </div>
 
     <!-- 裝備面板 (初始摺疊) -->
-    <div class="bg-slate-950 border-t-2 border-slate-800 shrink-0">
-        <div onclick="toggleFold('equip-content', 'fold-icon-equip')" class="py-5 px-8 flex justify-between items-center cursor-pointer hover:bg-slate-900 transition-colors">
-            <span class="text-sm font-black text-slate-400 uppercase tracking-widest">勇者裝備欄 (點擊展開)</span>
-            <div id="fold-icon-equip" class="text-slate-500 font-bold">▲</div>
+    <div class="bg-slate-950 border-t border-slate-800 shrink-0">
+        <div onclick="toggleFold('equip-content', 'fold-icon-equip')" class="py-4 px-6 flex justify-between items-center cursor-pointer hover:bg-slate-900 active:bg-slate-800 transition-colors">
+            <span class="text-xs font-black text-slate-400 tracking-widest">勇者裝備欄 (點擊展開)</span>
+            <div id="fold-icon-equip" class="text-slate-500 text-sm">▲</div>
         </div>
         <div id="equip-content" class="foldable-content">
-            <div id="equipment-slots" class="equip-grid-container">
-                <!-- 8格裝備 JS填充 -->
-            </div>
-            <div id="set-bonus-display" class="px-8 pb-5 text-sm font-black text-green-400 text-center leading-relaxed"></div>
+            <div id="equipment-slots" class="equip-grid"></div>
+            <div id="set-bonus-display" class="px-6 pb-6 text-xs font-bold text-green-400 text-center bg-slate-950 italic"></div>
         </div>
     </div>
 
     <!-- 功能選單 (初始摺疊) -->
-    <div class="bg-slate-950 border-t-2 border-slate-800 flex flex-col shrink-0">
-        <div onclick="toggleFold('menu-content', 'fold-icon-menu')" class="py-5 px-8 flex justify-between items-center cursor-pointer hover:bg-slate-900 transition-colors">
-            <span class="text-sm font-black text-indigo-400 uppercase tracking-widest">核心選單 (點擊展開)</span>
-            <div id="fold-icon-menu" class="text-indigo-400 font-bold">▲</div>
+    <div class="bg-slate-950 border-t border-slate-800 flex flex-col shrink-0">
+        <div onclick="toggleFold('menu-content', 'fold-icon-menu')" class="py-4 px-6 flex justify-between items-center cursor-pointer hover:bg-slate-900 active:bg-slate-800 transition-colors">
+            <span class="text-xs font-black text-indigo-400 tracking-widest">系統主功能 (點擊展開)</span>
+            <div id="fold-icon-menu" class="text-indigo-400 text-sm">▲</div>
         </div>
         
         <div id="menu-content" class="foldable-content">
-            <div class="flex bg-slate-950 border-b border-slate-800">
+            <div class="flex bg-slate-950 border-b border-slate-800 sticky top-0 z-10">
                 <button onclick="switchTab('upgrade')" id="btn-upgrade" class="tab-btn active">基因強化</button>
-                <button onclick="switchTab('bag')" id="btn-bag" class="tab-btn">行囊</button>
+                <button onclick="switchTab('bag')" id="btn-bag" class="tab-btn">勇者行囊</button>
                 <button onclick="switchTab('tower')" id="btn-tower" class="tab-btn text-purple-400">深淵副本</button>
                 <button onclick="switchTab('shop')" id="btn-shop" class="tab-btn">聖石商店</button>
             </div>
-            <div id="tab-content" class="h-[320px] overflow-y-auto p-5 custom-scroll bg-slate-900/40">
-                <!-- 內容由 JS 填充 -->
-            </div>
+            <div id="tab-content" class="min-h-[300px] max-h-[45vh] overflow-y-auto p-5 custom-scroll bg-slate-900/30"></div>
         </div>
     </div>
 
-    <!-- 彈窗系統 -->
+    <!-- 系統彈窗 -->
     <div id="modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
         <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl">
-            <div id="modal-header" class="p-6 bg-slate-800 font-black text-xl border-b-2 border-slate-700 text-center uppercase tracking-wider"></div>
-            <div id="modal-body" class="p-7 text-balanced text-slate-300 custom-scroll max-h-[50vh] leading-relaxed"></div>
-            <div id="modal-footer" class="p-6 flex gap-4 border-t border-slate-800">
-                <button onclick="closeModal()" class="flex-1 py-4 bg-slate-700 rounded-2xl font-black btn-main">返回</button>
+            <div id="modal-header" class="p-5 bg-slate-800 font-black text-base border-b border-slate-700 text-center tracking-widest"></div>
+            <div id="modal-body" class="p-6 text-sm text-slate-300 leading-relaxed custom-scroll max-h-[50vh]"></div>
+            <div id="modal-footer" class="p-5 flex gap-4 border-t border-slate-800 bg-slate-950/50">
+                <button onclick="closeModal()" class="flex-1 py-4 bg-slate-700 rounded-2xl text-sm font-black btn-click text-slate-300">關閉</button>
                 <div id="modal-action" class="flex-1"></div>
             </div>
         </div>
     </div>
 
-    <div id="toast-container" class="fixed top-28 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+    <!-- 提示通知容器 -->
+    <div id="toast-container" class="fixed top-28 left-1/2 -translate-x-1/2 z-[110] flex flex-col gap-3 pointer-events-none w-3/4"></div>
 
     <script>
-        const __app_id = "infinite_hero_zen_v4";
+        const __app_id = "infinite_hero_pro_v5";
         
-        // 指定怪物池
+        // 嚴格鎖定怪物種類
         const MONSTER_POOL = [
             { n: "腐爛殭屍", e: "🧟" }, { n: "枯骨戰士", e: "💀" }, { n: "吸血蝙蝠", e: "🦇" },
-            { n: "頑固石頭怪", e: "🗿" }, { n: "遠古巨石像", e: "🤖" }, { n: "地底毒蛇", e: "🐍" }
+            { n: "頑固石頭怪", e: "🗿" }, { n: "古代巨石像", e: "🤖" }, { n: "森林劇毒蛇", e: "🐍" }
         ];
 
+        // 遊戲狀態資料
         const GAME_DATA = {
             gold: 0, rebornStones: 0, rebornCount: 0,
             level: 1, maxLevel: 1,
@@ -203,29 +198,30 @@
             lastSave: Date.now()
         };
 
+        // 轉生商店 (12件商品)
         const SHOP_ITEMS = [
-            { id: 'dmg', n: '破壞之力', d: '最終傷害 +50%', baseCost: 1 },
-            { id: 'hp', n: '生命泉源', d: '最大生命 +50%', baseCost: 1 },
-            { id: 'def', n: '鋼鐵意志', d: '防禦效果 +30%', baseCost: 1 },
-            { id: 'spd', n: '迅捷腳步', d: '攻擊速度 +10%', baseCost: 2 },
-            { id: 'critR', n: '精確打擊', d: '暴擊機率 +5%', baseCost: 2 },
-            { id: 'critD', n: '致命一擊', d: '暴擊傷害 +20%', baseCost: 2 },
-            { id: 'block', n: '神聖格擋', d: '格擋機率 +2% (上限70%)', baseCost: 3 },
-            { id: 'drop', n: '尋寶達人', d: '裝備掉落率 +10%', baseCost: 3 },
-            { id: 'gold', n: '財富增幅', d: '金幣獲得 +50%', baseCost: 2 },
+            { id: 'dmg', n: '破壞之力', d: '全傷害提升 +50%', baseCost: 1 },
+            { id: 'hp', n: '生命泉源', d: '全生命提升 +50%', baseCost: 1 },
+            { id: 'def', n: '鋼鐵意志', d: '減傷防禦力 +30%', baseCost: 1 },
+            { id: 'spd', n: '極限超頻', d: '攻擊速度提升 +10%', baseCost: 2 },
+            { id: 'critR', n: '精確打擊', d: '暴擊率 +5%', baseCost: 2 },
+            { id: 'critD', n: '致命一擊', d: '暴擊傷害 +25%', baseCost: 2 },
+            { id: 'block', n: '聖光格擋', d: '格擋率 +3% (上限70%)', baseCost: 3 },
+            { id: 'drop', n: '尋寶之瞳', d: '裝備掉落率 +10%', baseCost: 3 },
+            { id: 'gold', n: '點石成金', d: '金幣獲得量 +50%', baseCost: 2 },
             { id: 'setR', n: '套裝共鳴', d: '套裝出現機率 +5%', baseCost: 5 },
-            { id: 'rebP', n: '命運回饋', d: '轉生石數量 +10%', baseCost: 10 },
-            { id: 'hP', n: '原始體質', d: '基礎生命值 +200', baseCost: 1 }
+            { id: 'rebP', n: '輪迴回饋', d: '轉生石獲取量 +15%', baseCost: 8 },
+            { id: 'hP', n: '原始體質', d: '基礎生命值 +500', baseCost: 1 }
         ];
 
         const TYPES = ["頭盔", "護甲", "護腿", "靴子", "武器", "盾牌", "項鍊", "戒指"];
         const RARITIES = [
             { id: 'N', name: '普通', color: '#94a3b8', chance: 0.6, mult: 1 },
             { id: 'R', name: '稀有', color: '#3b82f6', chance: 0.25, mult: 2.2 },
-            { id: 'SR', name: '史詩', color: '#a855f7', chance: 0.1, mult: 4.5 },
-            { id: 'SSR', name: '傳奇', color: '#f59e0b', chance: 0.04, mult: 9 },
-            { id: 'UR', name: '神話', color: '#ef4444', chance: 0.01, mult: 20 },
-            { id: 'SET', name: '套裝', color: '#22c55e', chance: 0, mult: 22.0 }
+            { id: 'SR', name: '史詩', color: '#a855f7', chance: 0.1, mult: 4.8 },
+            { id: 'SSR', name: '傳奇', color: '#f59e0b', chance: 0.04, mult: 10 },
+            { id: 'UR', name: '神話', color: '#ef4444', chance: 0.01, mult: 25 },
+            { id: 'SET', name: '套裝', color: '#22c55e', chance: 0, mult: 28.0 }
         ];
 
         let player = { hp: 100, maxHp: 100, dmg: 5, def: 0, block: 0, spd: 1, critR: 0.05, critD: 1.5 };
@@ -233,109 +229,90 @@
         let lastAtk = 0;
         let activeTab = 'upgrade';
 
-        // 格式化數字防止通膨顯示
+        // 格式化數字 (防止通膨顯示)
         function formatNumber(n) {
             if (n < 1000) return Math.floor(n).toString();
             const units = ["K", "M", "B", "T", "P", "E"];
-            let unitIdx = -1;
-            let val = n;
-            while (val >= 1000 && unitIdx < units.length - 1) {
-                val /= 1000;
-                unitIdx++;
-            }
-            return val.toFixed(unitIdx === -1 ? 0 : 1) + (unitIdx === -1 ? "" : units[unitIdx]);
+            let u = -1;
+            do { n /= 1000; u++; } while (n >= 1000 && u < units.length - 1);
+            return n.toFixed(1) + units[u];
         }
 
         function init() {
             loadGame();
-            handleOfflineIncome();
+            handleOffline();
             updateStats();
             spawn();
             switchTab('upgrade');
-            gameLoop();
-            setInterval(saveGame, 5000);
+            requestAnimationFrame(gameLoop);
+            setInterval(saveGame, 10000);
         }
 
-        function handleOfflineIncome() {
+        // 離線收益計算
+        function handleOffline() {
             const now = Date.now();
-            const diffSeconds = Math.floor((now - GAME_DATA.lastSave) / 1000);
-            if (diffSeconds > 60) {
-                const incomePerSec = Math.floor(GAME_DATA.maxLevel * 3 * (1 + GAME_DATA.shopLv.gold * 0.5));
-                const maxSeconds = 12 * 3600; // 最多累計 12 小時
-                const effectiveTime = Math.min(diffSeconds, maxSeconds);
-                const totalGold = incomePerSec * effectiveTime;
-                GAME_DATA.gold += totalGold;
-                
-                showModal("離線結算回報", `
-                    <div class="space-y-5 py-4">
-                        <p class="text-slate-400 font-bold">您已經離開冒險旅程 ${Math.floor(effectiveTime / 60)} 分鐘</p>
-                        <p class="text-4xl font-black text-yellow-400 tracking-widest">💰 ${formatNumber(totalGold)}</p>
-                        <div class="text-[11px] text-slate-500 bg-black/30 p-3 rounded-xl">
-                            計算公式：最高層數 (${GAME_DATA.maxLevel}) × 收益加成 × 離線時長
-                        </div>
-                    </div>
+            const diff = Math.floor((now - GAME_DATA.lastSave) / 1000);
+            if (diff > 60) {
+                const limit = Math.min(diff, 12 * 3600); // 最高 12 小時
+                const rate = GAME_DATA.maxLevel * 5 * (1 + GAME_DATA.shopLv.gold * 0.5);
+                const earned = Math.floor(rate * limit);
+                GAME_DATA.gold += earned;
+                showModal("離線掃蕩結算", `
+                    勇者在您不在的時間裡持續於地城掃蕩...<br><br>
+                    離線時長：<b>${Math.floor(limit/3600)}時${Math.floor((limit%3600)/60)}分</b><br>
+                    累計金幣收益：<br>
+                    <span class="text-3xl font-black text-yellow-400">💰 ${formatNumber(earned)}</span>
                 `);
             }
         }
 
-        function gameLoop() {
-            const now = Date.now();
+        function gameLoop(now) {
             if (enemy && enemy.hp > 0 && player.hp > 0 && (now - lastAtk >= (1000/player.spd))) {
-                performAttack();
+                let isCrit = Math.random() < player.critR;
+                let d = Math.max(1, Math.floor(player.dmg * (isCrit ? player.critD : 1)));
+                enemy.hp -= d;
+                showDmg(d, isCrit);
+                
+                if (enemy.hp <= 0) {
+                    die();
+                } else {
+                    let ed = Math.max(0, enemy.dmg - player.def);
+                    if (Math.random() < player.block) { 
+                        ed = 0; 
+                        toast("🛡️ 格擋！傷害無效", "#3b82f6"); 
+                    }
+                    player.hp = Math.max(0, player.hp - ed);
+                    updatePlayerUI();
+                    if (player.hp <= 0) pDie();
+                }
                 lastAtk = now;
+                updateEnemyUI();
             }
             requestAnimationFrame(gameLoop);
-        }
-
-        function performAttack() {
-            let isCrit = Math.random() < player.critR;
-            let d = Math.max(1, Math.floor(player.dmg * (isCrit ? player.critD : 1)));
-            enemy.hp -= d;
-            updateEnemyUI();
-            showDmg(d, isCrit);
-            
-            if (enemy.hp <= 0) { die(); return; }
-
-            let ed = Math.max(0, enemy.dmg - player.def);
-            if (Math.random() < player.block) { ed = 0; toast("🛡️ 格擋防禦成功！", "#60a5fa"); }
-            player.hp = Math.max(0, player.hp - ed);
-            updatePlayerUI();
-            if (player.hp <= 0) pDie();
         }
 
         function spawn() {
             const floor = GAME_DATA.isTower ? GAME_DATA.towerFloor : GAME_DATA.level;
             // 副本難度加強
-            const baseScale = Math.pow(1.23, floor - 1);
-            const towerScale = GAME_DATA.isTower ? (Math.pow(1.4, floor) * 10) : 1;
-            const finalScale = baseScale * towerScale;
-
-            const monster = MONSTER_POOL[Math.floor(Math.random() * MONSTER_POOL.length)];
+            const diffMult = GAME_DATA.isTower ? (Math.pow(1.6, floor) * 18) : Math.pow(1.23, floor-1);
+            const m = MONSTER_POOL[Math.floor(Math.random() * MONSTER_POOL.length)];
             
             enemy = {
-                name: GAME_DATA.isTower ? `[深淵] ${monster.n} ${floor}F` : `${monster.n} Lv.${floor}`,
-                maxHp: Math.floor(70 * finalScale),
-                dmg: Math.floor(12 * finalScale),
-                gold: Math.floor(15 * finalScale),
-                emoji: monster.e
+                name: GAME_DATA.isTower ? `[深淵] ${m.n} ${floor}F` : `${m.n} Lv.${floor}`,
+                maxHp: Math.floor(100 * diffMult),
+                dmg: Math.floor(18 * diffMult),
+                gold: Math.floor(25 * diffMult),
+                emoji: m.e
             };
             enemy.hp = enemy.maxHp;
-            renderEnemy();
-        }
-
-        function renderEnemy() {
             document.getElementById('monster-sprite').innerText = enemy.emoji;
             document.getElementById('monster-name').innerText = enemy.name;
             updateEnemyUI();
         }
 
-        function updateEnemyUI() {
-            const p = (Math.max(0, enemy.hp) / enemy.maxHp) * 100;
-            document.getElementById('monster-hp-bar').style.width = p + "%";
-        }
-
         function die() {
             GAME_DATA.gold += Math.floor(enemy.gold * (1 + GAME_DATA.shopLv.gold * 0.5));
+            // 普通地城 10 層掉落一次裝備，副本每層掉落
             if (GAME_DATA.isTower || (GAME_DATA.level % 10 === 0)) dropItem();
             
             if (GAME_DATA.isTower) { 
@@ -347,18 +324,17 @@
             
             player.hp = player.maxHp;
             updateUI(); updatePlayerUI(); setTimeout(spawn, 300);
-            saveGame();
         }
 
         function pDie() {
-            toast("💔 冒險中斷並撤退...", "#ef4444");
+            toast("💀 戰敗撤退：挑戰失敗", "#ef4444");
             GAME_DATA.autoAdv = false;
             if (GAME_DATA.isTower) { 
                 GAME_DATA.isTower = false; 
                 GAME_DATA.towerFloor = 1; 
-                document.getElementById('battle-scene').style.backgroundColor = '';
-            } else if (GAME_DATA.level > 1) { 
-                GAME_DATA.level--; 
+                document.getElementById('battle-scene').style.backgroundColor = ''; 
+            } else if (GAME_DATA.level > 1) {
+                GAME_DATA.level--;
             }
             player.hp = player.maxHp;
             updateUI(); updatePlayerUI(); setTimeout(spawn, 1000);
@@ -368,63 +344,62 @@
             const rb = Math.pow(1.5, GAME_DATA.rebornCount);
             const s = GAME_DATA.shopLv;
             
-            // 基礎數值計算 (包含聖石強化)
-            let maxHp = Math.floor(((100 + s.hP * 200) + GAME_DATA.stats.str * 50) * rb * (1 + s.hp * 0.5));
-            let dmg = Math.floor((6 + GAME_DATA.stats.str * 7) * rb * (1 + s.dmg * 0.5));
-            let def = Math.floor((GAME_DATA.stats.sta * 5) * rb * (1 + s.def * 0.3));
-            let block = Math.min(0.7, (GAME_DATA.stats.sta * 0.015) + s.block * 0.02);
+            // 基礎基因數值
+            let mHp = ((200 + s.hP * 500) + GAME_DATA.stats.str * 60) * rb * (1 + s.hp * 0.5);
+            let dmg = (10 + GAME_DATA.stats.str * 10) * rb * (1 + s.dmg * 0.5);
+            let def = (GAME_DATA.stats.sta * 6) * rb * (1 + s.def * 0.3);
+            let blk = Math.min(0.7, (GAME_DATA.stats.sta * 0.015) + s.block * 0.03);
             let spd = (1 + (GAME_DATA.stats.agi * 0.08)) * (1 + s.spd * 0.1);
-            let critR = 0.05 + (GAME_DATA.stats.agi * 0.008) + (s.critR * 0.05);
-            let critD = 1.5 + s.critD * 0.2;
+            let cR = 0.05 + (GAME_DATA.stats.agi * 0.01) + (s.critR * 0.05);
+            let cD = 1.5 + s.critD * 0.25;
 
-            // 裝備基礎加成
-            let setCount = 0;
+            // 裝備數值加成
+            let sets = 0;
             GAME_DATA.equips.forEach(e => { 
                 if (e) { 
-                    maxHp += e.h; dmg += e.a; def += e.d; 
-                    if (e.r === 'SET') setCount++;
+                    mHp += e.h; dmg += e.a; def += e.d; 
+                    if (e.r === 'SET') sets++; 
                 } 
             });
 
             // 套裝屬性加成實作
-            let setBonusText = [];
-            if (setCount >= 2) { dmg *= 1.3; setBonusText.push("2件: 傷害+30%"); }
-            if (setCount >= 4) { maxHp *= 1.6; setBonusText.push("4件: 生命+60%"); }
-            if (setCount >= 6) { def *= 2.0; setBonusText.push("6件: 防禦+100%"); }
-            if (setCount >= 8) { critD += 1.2; setBonusText.push("8件: 暴傷+120%"); }
+            let bTxt = [];
+            if (sets >= 2) { dmg *= 1.5; bTxt.push("2件:傷害+50%"); }
+            if (sets >= 4) { mHp *= 1.8; bTxt.push("4件:生命+80%"); }
+            if (sets >= 6) { def *= 2.5; bTxt.push("6件:防禦+150%"); }
+            if (sets >= 8) { cD += 2.0; bTxt.push("8件:暴傷+200%"); }
 
-            player.maxHp = Math.floor(maxHp);
+            player.maxHp = Math.floor(mHp);
             player.dmg = Math.floor(dmg);
             player.def = Math.floor(def);
-            player.block = block;
+            player.block = blk;
             player.spd = spd;
-            player.critR = critR;
-            player.critD = critD;
+            player.critR = cR;
+            player.critD = cD;
             
             if (player.hp > player.maxHp || player.hp <= 0) player.hp = player.maxHp;
-            
-            document.getElementById('set-bonus-display').innerText = setBonusText.join(" | ") || "目前無套裝加成效果";
-            updatePlayerUI(); renderEquips();
+            document.getElementById('set-bonus-display').innerText = bTxt.join(" ◈ ") || "當前未激活套裝共鳴";
+            renderEquips();
         }
 
         function renderEquips() {
             const container = document.getElementById('equipment-slots');
             container.innerHTML = '';
-            TYPES.forEach((type, i) => {
+            TYPES.forEach((t, i) => {
                 const eq = GAME_DATA.equips[i];
-                const rarity = eq ? RARITIES.find(r => r.id === eq.r) : null;
+                const r = eq ? RARITIES.find(x => x.id === eq.r) : null;
                 const div = document.createElement('div');
                 div.className = `equip-card ${eq?.r === 'UR' ? 'rarity-ur' : ''} ${eq?.r === 'SET' ? 'rarity-set' : ''}`;
                 if (eq) {
-                    div.style.borderColor = rarity.color;
+                    div.style.borderColor = r.color;
                     div.innerHTML = `
-                        <span class="text-[10px] font-black uppercase" style="color:${rarity.color}">${rarity.name}</span>
+                        <span class="text-[9px] font-black uppercase" style="color:${r.color}">${r.name}</span>
                         <div class="flex flex-col items-center mt-1">
-                            <span class="stat-text text-red-400">攻:${formatNumber(eq.a)}</span>
-                            <span class="stat-text text-blue-400">血:${formatNumber(eq.h)}</span>
+                            <span class="stat-val text-red-400">⚔️${formatNumber(eq.a)}</span>
+                            <span class="stat-val text-blue-400">❤️${formatNumber(eq.h)}</span>
                         </div>`;
                 } else {
-                    div.innerHTML = `<span class="text-[11px] font-black text-slate-600">${type}</span>`;
+                    div.innerHTML = `<span class="text-[10px] font-black text-slate-600">${t}</span>`;
                 }
                 container.appendChild(div);
             });
@@ -432,251 +407,243 @@
 
         function dropItem() {
             let r = null;
-            const setChance = 0.25 + (GAME_DATA.shopLv.setR * 0.05);
-            // 副本保證高機率產出套裝
-            if (GAME_DATA.isTower && Math.random() < setChance) { 
+            // 套裝掉落機率 (商店加成 + 副本加成)
+            const sR = (GAME_DATA.isTower ? 0.35 : 0.05) + (GAME_DATA.shopLv.setR * 0.05);
+            
+            if (Math.random() < sR) { 
                 r = RARITIES.find(x => x.id === 'SET'); 
             } else {
                 let roll = Math.random();
                 let cur = 0;
-                let dropMult = 1 + (GAME_DATA.shopLv.drop * 0.1);
+                let mult = 1 + (GAME_DATA.shopLv.drop * 0.1);
                 for (const x of RARITIES) {
-                    let c = x.chance * (x.id !== 'N' ? dropMult : 1);
+                    let c = x.chance * (x.id !== 'N' ? mult : 1);
                     cur += c; 
                     if (roll < cur) { r = x; break; }
                 }
             }
+            if (!r) r = RARITIES[0];
 
-            if (r) {
-                const idx = Math.floor(Math.random() * 8);
-                const tier = Math.ceil((GAME_DATA.isTower ? GAME_DATA.towerFloor : GAME_DATA.level) / 10);
-                const item = { 
-                    id: Math.random(), 
-                    n: `${TYPES[idx]} T${tier}`, 
-                    idx, r: r.id, tier, 
-                    h: tier*110*r.mult, 
-                    a: tier*22*r.mult, 
-                    d: tier*11*r.mult 
-                };
-                
-                if (r.id === 'SET') {
-                    if (GAME_DATA.inv.length < 32) { 
-                        GAME_DATA.inv.push(item); 
-                        toast("🟢 獲得套裝：已即時送到行囊！", "#22c55e"); 
-                        if (activeTab === 'bag') switchTab('bag'); 
-                    } else {
-                        toast("❌ 行囊空間不足！", "#ef4444");
-                    }
+            const idx = Math.floor(Math.random() * 8);
+            const tier = Math.ceil((GAME_DATA.isTower ? GAME_DATA.towerFloor : GAME_DATA.level) / 10);
+            const item = { 
+                id: Math.random(), 
+                n: `${TYPES[idx]} T${tier}`, 
+                idx, r: r.id, tier, 
+                h: tier * 150 * r.mult, 
+                a: tier * 30 * r.mult, 
+                d: tier * 15 * r.mult 
+            };
+            
+            if (r.id === 'SET') {
+                if (GAME_DATA.inv.length < 40) { 
+                    GAME_DATA.inv.push(item); 
+                    toast("🟢 稀有套裝掉落！已收納至行囊", "#22c55e"); 
+                    if (activeTab === 'bag') switchTab('bag'); 
                 } else {
-                    const current = GAME_DATA.equips[idx];
-                    const score = (i) => i ? (i.a*12 + i.d*10 + i.h/3) : 0;
-                    if (score(item) > score(current)) { 
-                        GAME_DATA.equips[idx] = item; 
-                        updateStats(); 
-                        toast("🛡️ 自動換裝：戰力提升", "#3b82f6"); 
-                    }
+                    toast("❌ 行囊空間不足，套裝被毀滅了", "#ef4444");
+                }
+            } else {
+                const old = GAME_DATA.equips[idx];
+                const score = (i) => i ? (i.a * 10 + i.d * 8 + i.h / 5) : 0;
+                if (score(item) > score(old)) { 
+                    GAME_DATA.equips[idx] = item; 
+                    updateStats(); 
+                    toast(`🛡️ 穿戴更高戰力: ${r.name}`, "#3b82f6"); 
                 }
             }
         }
 
-        function toggleFold(targetId, iconId) {
-            const content = document.getElementById(targetId);
-            const icon = document.getElementById(iconId);
-            const isExpanded = content.classList.toggle('expanded');
-            icon.innerText = isExpanded ? '▼' : '▲';
+        function toggleFold(target, icon) {
+            const el = document.getElementById(target);
+            const ic = document.getElementById(icon);
+            const isExpanded = el.classList.toggle('expanded');
+            ic.innerText = isExpanded ? '▼' : '▲';
         }
 
         function switchTab(t) {
             activeTab = t;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`btn-${t}`).classList.add('active');
-            
-            const content = document.getElementById('tab-content');
-            content.innerHTML = '';
+            const box = document.getElementById('tab-content');
+            box.innerHTML = '';
             
             if (t === 'upgrade') {
-                content.innerHTML = `
-                    <div class="flex justify-between items-center mb-5 px-1">
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-widest">基因強化系統</span>
-                        <button onclick="showDetail('attr')" class="text-xs text-indigo-400 font-black">詳細說明</button>
-                    </div>
-                    <div class="space-y-4">
-                        ${renderUp('攻擊基因 (STR)', 'str', '攻擊+7, 生命+50', '#ef4444')}
-                        ${renderUp('生存基因 (STA)', 'sta', '防禦+5, 提升格擋', '#3b82f6')}
-                        ${renderUp('超頻基因 (AGI)', 'agi', '速+8%, 提升暴擊', '#22c55e')}
-                    </div>`;
+                box.innerHTML = `<div class="space-y-4">
+                    ${renderUp('攻擊基因', 'str', '大幅提升 攻擊/生命', '#ef4444')}
+                    ${renderUp('生存基因', 'sta', '提升 防禦/格擋機率', '#3b82f6')}
+                    ${renderUp('超頻基因', 'agi', '提升 攻速/暴擊率', '#22c55e')}
+                    <button onclick="showDtl('attr')" class="w-full py-4 text-xs text-slate-500 font-black border-2 border-slate-800 rounded-2xl">基因與屬性詳細說明</button>
+                </div>`;
             } else if (t === 'bag') {
-                content.innerHTML = `
-                    <div class="text-xs text-slate-500 mb-5 font-black text-center uppercase">套裝收藏盤點 (${GAME_DATA.inv.length}/32)</div>
-                    <div class="grid grid-cols-1 gap-4">
-                        ${GAME_DATA.inv.map((item, i) => `
-                            <div class="bg-slate-800 border-2 border-green-600 rounded-2xl p-4 flex justify-between items-center rarity-set">
-                                <div class="text-left flex-1" onclick="equipFromInv(${i})">
-                                    <p class="text-xl font-black text-white">${item.n}</p>
-                                    <p class="text-[13px] text-slate-400 font-bold">攻:${formatNumber(item.a)} | 血:${formatNumber(item.h)} | 防:${formatNumber(item.d)}</p>
-                                </div>
-                                <div class="flex flex-col gap-2">
-                                    <button onclick="equipFromInv(${i})" class="bg-green-700 px-4 py-2 rounded-xl text-xs font-black">穿戴</button>
-                                    <button onclick="deleteFromInv(${i})" class="bg-red-900/60 px-4 py-2 rounded-xl text-xs font-black text-red-200">分解</button>
-                                </div>
-                            </div>`).join('')}
-                    </div>
-                    ${GAME_DATA.inv.length === 0 ? '<div class="py-16 text-slate-600 font-black">目前沒有收藏任何套裝</div>' : ''}`;
+                box.innerHTML = `<div class="grid grid-cols-1 gap-4">
+                    ${GAME_DATA.inv.map((it, i) => `
+                        <div class="bg-slate-800 border-2 border-green-600/50 rounded-2xl p-4 flex justify-between items-center shadow-lg">
+                            <div class="text-left">
+                                <p class="text-base font-black text-white">${it.n}</p>
+                                <p class="text-xs text-green-400 font-bold">⚔️${formatNumber(it.a)} ❤️${formatNumber(it.h)} 🛡️${formatNumber(it.d)}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="equipInv(${i})" class="bg-green-700 px-4 py-2 rounded-xl text-xs font-black btn-click">穿戴</button>
+                                <button onclick="delInv(${i})" class="bg-red-900/40 px-4 py-2 rounded-xl text-xs font-black btn-click text-red-200">分解</button>
+                            </div>
+                        </div>`).join('')}
+                    ${GAME_DATA.inv.length === 0 ? '<div class="py-16 text-slate-600 font-bold">行囊空空如也</div>' : ''}
+                </div>`;
             } else if (t === 'shop') {
-                content.innerHTML = `
-                    <div class="bg-indigo-950 p-5 rounded-2xl border border-indigo-500/30 mb-6 flex justify-between items-center">
-                        <span class="text-3xl font-black text-white">💎 ${GAME_DATA.rebornStones}</span>
-                        <span class="text-[11px] text-indigo-400 font-black uppercase tracking-widest">可用聖石</span>
-                    </div>
-                    <div class="space-y-4">${SHOP_ITEMS.map(i => renderShop(i)).join('')}</div>`;
+                box.innerHTML = `<div class="bg-indigo-950/60 p-6 rounded-2xl border-2 border-indigo-500/30 mb-5 flex justify-between items-center shadow-2xl">
+                    <span class="text-3xl font-black text-white">💎 ${GAME_DATA.rebornStones}</span>
+                    <span class="text-xs text-indigo-400 font-black tracking-widest">聖石殘餘</span>
+                </div>
+                <div class="space-y-4">${SHOP_ITEMS.map(i => renderShop(i)).join('')}</div>`;
             } else if (t === 'tower') {
-                showDetail('tower');
+                showDtl('tower');
             }
         }
 
         function renderUp(n, k, d, c) {
-            return `<div class="bg-slate-800 p-5 rounded-2xl flex justify-between items-center border border-slate-700">
-                <div class="text-left"><p class="text-lg font-black" style="color:${c}">${n} Lv.${GAME_DATA.stats[k]}</p><p class="text-[12px] text-slate-500">${d}</p></div>
-                <button onclick="upStat('${k}')" class="bg-slate-900 px-6 py-3 rounded-xl text-sm font-black text-yellow-400 btn-main">💰 ${formatNumber(GAME_DATA.costs[k])}</button>
+            return `<div class="bg-slate-800 p-5 rounded-2xl flex justify-between items-center border-2 border-slate-700 shadow-md">
+                <div class="text-left"><p class="text-base font-black" style="color:${c}">${n} Lv.${GAME_DATA.stats[k]}</p><p class="text-xs text-slate-500">${d}</p></div>
+                <button onclick="upStat('${k}')" class="bg-slate-900 px-5 py-3 rounded-xl text-sm font-black text-yellow-400 btn-click ring-1 ring-yellow-500/20">💰 ${formatNumber(GAME_DATA.costs[k])}</button>
             </div>`;
         }
 
-        function renderShop(item) {
-            const lv = GAME_DATA.shopLv[item.id] || 0;
-            const cost = item.baseCost + lv;
-            return `<div class="bg-slate-800 p-5 rounded-2xl flex justify-between items-center border border-slate-700">
-                <div class="text-left flex-1 pr-4"><p class="text-lg font-black text-white">${item.n} [${lv}]</p><p class="text-[11px] text-slate-500">${item.d}</p></div>
-                <button onclick="buyShop('${item.id}')" class="bg-indigo-900 px-5 py-3 rounded-xl text-sm font-black text-white btn-main">${cost} 💎</button>
+        function renderShop(it) {
+            const lv = GAME_DATA.shopLv[it.id] || 0;
+            const cost = it.baseCost + lv;
+            return `<div class="bg-slate-800 p-5 rounded-2xl flex justify-between items-center border-2 border-slate-700">
+                <div class="text-left pr-3"><p class="text-base font-black text-white">${it.n} [${lv}]</p><p class="text-xs text-slate-500">${it.d}</p></div>
+                <button onclick="buyShop('${it.id}')" class="bg-indigo-900 px-5 py-3 rounded-xl text-sm font-black btn-click shadow-lg">${cost} 💎</button>
             </div>`;
         }
 
-        function showDetail(type) {
+        function showDtl(type) {
             if (type === 'attr') {
-                showModal("屬性能力詳細說明", `
-                    <div class="text-left space-y-5 text-sm">
-                        <div class="border-l-4 border-red-500 pl-4"><strong class="text-red-400 text-lg block">力量 (STR)</strong>每級 +7 攻擊, +50 生命。轉生後倍率提升最明顯的核心屬性。</div>
-                        <div class="border-l-4 border-blue-500 pl-4"><strong class="text-blue-400 text-lg block">生存 (STA)</strong>每級 +5 防禦, 並提供格擋機率。防禦可直接抵銷敵傷，格擋可完全免疫該次攻擊。</div>
-                        <div class="border-l-4 border-green-500 pl-4"><strong class="text-green-400 text-lg block">超頻 (AGI)</strong>每級 +8% 攻速與固定暴擊率。攻速直接縮短攻擊間隔。</div>
-                        <p class="text-[11px] text-slate-500 pt-3 border-t border-slate-800">數值公式：(基礎 + 等級×成長) × 轉生倍率 × 裝備加成</p>
-                    </div>
+                showModal("基因屬性與轉生說明", `
+                    <p class="mb-3"><b class="text-red-400">力量 (STR)</b>: 提升 60 基礎攻擊與 500 最大生命。</p>
+                    <p class="mb-3"><b class="text-blue-400">生存 (STA)</b>: 提升 6 基礎防禦，並增加 1.5% 格擋率。</p>
+                    <p class="mb-3"><b class="text-green-400">超頻 (AGI)</b>: 提升 8% 攻速與 1% 暴擊機率。</p>
+                    <hr class="border-slate-700 my-4">
+                    <p class="text-indigo-300"><b>轉生加成：</b>每次轉生使角色總體實力提升 50% (乘法計算)，這是克服高難度副本的唯一途徑。</p>
                 `);
             } else if (type === 'tower') {
-                showModal("深淵禁地副本說明", `
-                    <div class="space-y-5 text-left text-sm">
-                        <div class="bg-purple-900/30 p-5 rounded-2xl border border-purple-700/50">
-                            <p class="text-purple-300 font-black mb-2 text-lg">⚠️ 極限難度</p>
-                            <p class="text-slate-300">副本怪物的生命與攻擊是地城的 10 倍以上，且每層增加 40%。一旦挑戰失敗，副本進度將會重置。</p>
-                        </div>
-                        <div class="bg-green-900/30 p-5 rounded-2xl border border-green-700/50">
-                            <p class="text-green-300 font-black mb-2 text-lg">🛡️ 傳說套裝</p>
-                            <p class="text-slate-300">這是獲得「綠色套裝」的唯一途徑。收集 2/4/6/8 件可獲得極其強大的全能力翻倍效果。</p>
-                        </div>
-                    </div>`, 
-                    `<button onclick="toggleTower();closeModal()" class="w-full py-4 bg-purple-600 rounded-2xl font-black shadow-xl">挑戰深淵</button>`
-                );
+                showModal("深淵禁地副本", `
+                    <div class="text-center space-y-4">
+                        <p class="text-purple-400 font-black text-lg">⚠️ 極高難度警告</p>
+                        <p class="text-slate-400">深淵中的怪物屬性為外界的 15-20 倍，且隨著層數飛速增強。若在副本中戰亡，探險將直接終止。</p>
+                        <p class="text-green-400 font-bold">專屬掉落：傳說套裝</p>
+                        <p class="text-xs text-slate-500">套裝提供獨有的 2/4/6/8 件共鳴屬性，是遊戲中後期最強大的力量來源。</p>
+                    </div>
+                `, `<button onclick="startTower();closeModal()" class="w-full py-5 bg-purple-600 rounded-2xl text-base font-black shadow-xl btn-click">踏入深淵</button>`);
             }
         }
 
         function showRebornDetails() {
-            const stone = Math.floor(GAME_DATA.maxLevel / 10 * (1 + GAME_DATA.shopLv.rebP * 0.1));
-            showModal("古老轉生儀式說明", `
-                <div class="text-center space-y-6 py-2">
-                    <div class="bg-indigo-950 p-7 rounded-2xl border-2 border-indigo-500/30 shadow-inner">
-                        <p class="text-xs text-indigo-300 font-black mb-1 uppercase tracking-tighter">預計可獲得聖石</p>
-                        <p class="text-5xl font-black text-white">💎 ${stone}</p>
+            const stone = Math.floor(GAME_DATA.maxLevel / 10 * (1 + GAME_DATA.shopLv.rebP * 0.15));
+            showModal("輪迴：古老轉生", `
+                <div class="text-center space-y-6">
+                    <div class="bg-indigo-950 p-6 rounded-3xl border-2 border-indigo-500/40">
+                        <p class="text-xs text-indigo-300 font-black uppercase mb-2">本次輪迴可領取聖石</p>
+                        <p class="text-5xl font-black text-white tracking-tighter">💎 ${stone}</p>
                     </div>
-                    <div class="text-left space-y-3 px-2">
-                        <p class="text-green-400 font-black">✅ 保留項目：基因等級、商店強化、行囊套裝、聖石。</p>
-                        <p class="text-red-400 font-black">❌ 重置項目：當前地城進度(回1F)、現有金幣。</p>
-                        <p class="text-slate-400 italic text-[11px]">提示：每次轉生提供永久 50% 數值加乘 (複利計算)。</p>
+                    <div class="text-left text-xs text-slate-400 space-y-2 bg-black/30 p-4 rounded-xl">
+                        <p>✅ 保留：基因等級、行囊套裝、聖石商店強化</p>
+                        <p>❌ 重置：目前地城層數、當前金幣、副本進度</p>
+                        <p class="text-indigo-400 font-bold">✨ 特效：全屬性永久 ×1.5 倍增長</p>
                     </div>
                 </div>`, 
-                GAME_DATA.maxLevel >= 100 ? `<button onclick="reborn();closeModal()" class="w-full py-4 bg-indigo-600 rounded-2xl font-black shadow-2xl">啟動轉生</button>` : `<div class="text-sm text-red-500 font-black text-center w-full bg-red-900/20 py-4 rounded-2xl">需達到地城 Lv.100 解鎖</div>`
+                GAME_DATA.maxLevel >= 100 ? `<button onclick="doReborn();closeModal()" class="w-full py-5 bg-indigo-600 rounded-2xl text-base font-black btn-click">執行轉生</button>` : `<div class="text-xs text-red-500 font-black text-center w-full py-4">地城需達到 100 層才能啟動輪迴</div>`
             );
         }
 
+        // 行為函數
         function upStat(k) {
             if (GAME_DATA.gold >= GAME_DATA.costs[k]) {
                 GAME_DATA.gold -= GAME_DATA.costs[k];
                 GAME_DATA.stats[k]++; GAME_DATA.costs[k] = Math.floor(GAME_DATA.costs[k] * 1.35);
                 updateStats(); updateUI(); switchTab(activeTab);
-            } else toast("❌ 基因金幣不足", "#ef4444");
+            } else toast("❌ 餘額不足以支付基因改造", "#ef4444");
         }
 
         function buyShop(id) {
-            const item = SHOP_ITEMS.find(i => i.id === id);
+            const it = SHOP_ITEMS.find(x => x.id === id);
             const lv = GAME_DATA.shopLv[id] || 0;
-            const cost = item.baseCost + lv;
+            const cost = it.baseCost + lv;
             if (GAME_DATA.rebornStones >= cost) {
                 GAME_DATA.rebornStones -= cost;
                 GAME_DATA.shopLv[id]++;
                 updateStats(); updateUI(); switchTab(activeTab);
-                toast("✨ 聖石強化成功！", "#a855f7");
-            } else toast("❌ 聖石不足", "#ef4444");
+                toast("✨ 聖石強化成功", "#a855f7");
+            } else toast("❌ 聖石數量不足", "#ef4444");
         }
 
-        function reborn() {
-            const stone = Math.floor(GAME_DATA.maxLevel / 10 * (1 + GAME_DATA.shopLv.rebP * 0.1));
-            GAME_DATA.rebornStones += stone;
-            GAME_DATA.rebornCount++;
+        function doReborn() {
+            const s = Math.floor(GAME_DATA.maxLevel / 10 * (1 + GAME_DATA.shopLv.rebP * 0.15));
+            GAME_DATA.rebornStones += s; GAME_DATA.rebornCount++;
             GAME_DATA.level = 1; GAME_DATA.gold = 0; GAME_DATA.isTower = false; GAME_DATA.autoAdv = false;
             updateStats(); updateUI(); spawn();
         }
 
-        function toggleTower() {
+        function startTower() {
             GAME_DATA.isTower = true; GAME_DATA.towerFloor = 1; GAME_DATA.autoAdv = false;
             document.getElementById('battle-scene').style.backgroundColor = '#1e1b4b';
             updateUI(); spawn();
         }
 
-        function equipFromInv(i) {
-            const item = GAME_DATA.inv[i];
-            const old = GAME_DATA.equips[item.idx];
-            GAME_DATA.equips[item.idx] = item;
+        function equipInv(i) {
+            const it = GAME_DATA.inv[i];
+            const old = GAME_DATA.equips[it.idx];
+            GAME_DATA.equips[it.idx] = it;
             GAME_DATA.inv.splice(i, 1);
             if (old && old.r === 'SET') GAME_DATA.inv.push(old);
             updateStats(); switchTab('bag');
-            toast("✅ 套裝穿戴完成", "#22c55e");
+            toast("✅ 換裝完畢", "#22c55e");
         }
 
-        function deleteFromInv(i) {
+        function delInv(i) {
             GAME_DATA.inv.splice(i, 1);
             switchTab('bag');
-            toast("🗑️ 套裝已分解移除", "#94a3b8");
+            toast("🗑️ 套裝已分解", "#94a3b8");
         }
 
         function toggleAuto() { if (!GAME_DATA.isTower) { GAME_DATA.autoAdv = !GAME_DATA.autoAdv; updateUI(); } }
         function goBack() { if (!GAME_DATA.isTower && GAME_DATA.level > 1) { GAME_DATA.level--; GAME_DATA.autoAdv = false; spawn(); updateUI(); } }
         
+        // UI 更新函數
         function updateUI() {
             document.getElementById('gold-display').innerText = formatNumber(GAME_DATA.gold);
             document.getElementById('zone-display').innerText = GAME_DATA.isTower ? `深淵 ${GAME_DATA.towerFloor}F` : `地城 Lv.${GAME_DATA.level}`;
-            document.getElementById('mode-badge').innerText = GAME_DATA.isTower ? "副本模式" : (GAME_DATA.autoAdv ? "自動探索" : "手動戰鬥");
+            document.getElementById('mode-badge').innerText = GAME_DATA.isTower ? "副本挑戰" : (GAME_DATA.autoAdv ? "自動探索" : "手動挑戰");
             document.getElementById('reborn-status').innerText = `x${GAME_DATA.rebornCount}`;
             document.getElementById('auto-btn').innerText = `自動: ${GAME_DATA.autoAdv ? 'ON' : 'OFF'}`;
-            document.getElementById('auto-btn').className = `px-8 py-4 rounded-2xl text-lg font-black border-2 border-white/10 btn-main ${GAME_DATA.autoAdv ? 'bg-green-600 shadow-green-900/40' : 'bg-slate-700'}`;
+            document.getElementById('auto-btn').style.background = GAME_DATA.autoAdv ? '#166534' : '';
         }
 
         function updatePlayerUI() {
-            const p = (Math.max(0, player.hp) / player.maxHp) * 100;
+            const p = (player.hp / player.maxHp) * 100;
             document.getElementById('player-hp-bar').style.width = p + "%";
             document.getElementById('player-hp-text').innerText = `${formatNumber(player.hp)} / ${formatNumber(player.maxHp)}`;
         }
 
+        function updateEnemyUI() {
+            const p = (enemy.hp / enemy.maxHp) * 100;
+            document.getElementById('monster-hp-bar').style.width = p + "%";
+        }
+
         function showDmg(a, c) {
             const el = document.createElement('div'); el.className = 'hit-effect';
-            el.innerText = (c ? '💥' : '') + formatNumber(a);
-            const scene = document.getElementById('battle-scene');
-            const target = document.getElementById('monster-sprite').getBoundingClientRect();
-            const sceneRect = scene.getBoundingClientRect();
-            el.style.left = (target.left - sceneRect.left + target.width/2 + (Math.random()*80-40)) + 'px';
-            el.style.top = (target.top - sceneRect.top + 40) + 'px';
-            scene.appendChild(el); setTimeout(() => el.remove(), 800);
+            el.innerText = (c ? '🔥' : '') + formatNumber(a);
+            const s = document.getElementById('battle-scene');
+            const t = document.getElementById('monster-sprite').getBoundingClientRect();
+            const r = s.getBoundingClientRect();
+            el.style.left = (t.left - r.left + t.width/2 + (Math.random()*80-40)) + 'px';
+            el.style.top = (t.top - r.top + 50) + 'px';
+            s.appendChild(el); setTimeout(() => el.remove(), 800);
         }
 
         function toast(m, c) {
             const t = document.createElement('div');
-            t.className = 'px-8 py-4 rounded-2xl text-base font-black text-white shadow-2xl border-2 border-white/10 text-center';
+            t.className = 'px-6 py-4 rounded-2xl text-sm font-black text-white shadow-2xl border-2 border-white/10 text-center animate-bounce';
             t.style.backgroundColor = c; t.innerText = m;
             document.getElementById('toast-container').appendChild(t); setTimeout(() => t.remove(), 2500);
         }
@@ -697,18 +664,15 @@
         function loadGame() {
             const saved = localStorage.getItem(__app_id);
             if (saved) {
-                const parsed = JSON.parse(saved);
-                Object.keys(parsed).forEach(k => {
-                    if (typeof parsed[k] === 'object' && !Array.isArray(parsed[k]) && parsed[k] !== null) {
-                        Object.assign(GAME_DATA[k], parsed[k]);
-                    } else {
-                        GAME_DATA[k] = parsed[k];
-                    }
+                const p = JSON.parse(saved);
+                Object.keys(p).forEach(k => {
+                    if (typeof p[k] === 'object' && !Array.isArray(p[k]) && p[k] !== null) Object.assign(GAME_DATA[k], p[k]);
+                    else GAME_DATA[k] = p[k];
                 });
             }
         }
 
-        window.onload = init;
+        init();
     </script>
 </body>
 </html>
